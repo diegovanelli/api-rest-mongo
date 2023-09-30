@@ -32,7 +32,7 @@ class LivroController {
       const autorEncontrado = await autor.findById(novoLivro.autor);
       const livroCompleto = { ...novoLivro, autor: {...autorEncontrado}};
       const livroCriado = await livro.create(livroCompleto);
-      res.status(201).json({ message: 'Livro cadastrado com sucesso!', livro: livroCriado });
+      res.status(201).json({ message: "Livro cadastrado com sucesso!", livro: livroCriado });
     } catch (error) {
       
       res.status(500).json({
@@ -76,6 +76,6 @@ class LivroController {
       });
     }
   }
-};
+}
 
 export default LivroController;

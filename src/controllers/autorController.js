@@ -28,7 +28,7 @@ class AutorController {
   static async cadastrarAutor(req, res) {
     try {
       const novoAutor = await autor.create(req.body);
-      res.status(201).json({ message: 'Autor cadastrado com sucesso!', autor: novoAutor });
+      res.status(201).json({ message: "Autor cadastrado com sucesso!", autor: novoAutor });
     } catch (error) {
       
       res.status(500).json({
@@ -57,9 +57,9 @@ class AutorController {
     } catch(error) {
       res.status(500).json({
         message: `${error.message} - Falha ao excluir o autor!`
-      })
+      });
     }
   }
-};
+}
 
 export default AutorController;

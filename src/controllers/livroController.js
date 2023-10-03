@@ -1,3 +1,4 @@
+import NaoEncotrado from "../errors/NaoEncontrado.js";
 import { autor } from "../models/Autor.js";
 import livro from "../models/Livro.js";
 
@@ -20,9 +21,7 @@ class LivroController {
       if (livroEncontrado !== null) {
         res.status(200).json(livroEncontrado);
       } else {
-        res.status(400).json({
-          message: "Livro não encontrado"
-        });
+        next(new NaoEncotrado("Livro não encontrado"));
       }
       res.status(200).json(livroEncontrado);
     } catch(error) {

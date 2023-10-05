@@ -1,11 +1,14 @@
+import NaoEncontrado from "../errors/NaoEncontrado.js";
 import { autor } from "../models/index.js";
 
 class AutorController {
 
   static listarAutores = async (req, res, next) => {
     try {
-      const listaAutores = await autor.find();
-      res.status(200).json(listaAutores);
+      const autoresResultado = autor.find();
+      req.resultado = autoresResultado;
+
+      next();
     } catch (error) {
       next(error);
     }
@@ -19,9 +22,7 @@ class AutorController {
       if (autorEncontrado !== null) {
         res.status(200).json(autorEncontrado);
       } else {
-        res.status(404).json({
-          message: "Autor não encontrado."
-        });  
+        next(new NaoEncontrado("Autor não encontrado."));
       }
     } catch(error) {
       next(error);
@@ -40,8 +41,12 @@ class AutorController {
   static atualizarAutor = async (req, res, next) => {
     try {
       const id = req.params.id;
-      await autor.findByIdAndUpdate(id, req.body);
-      res.status(200).json({ message: "Autor atualizado!" });
+      const autorResultado = await autor.findByIdAndUpdate(id, {$set: req.body});
+      if (autorResultado !== null) {
+        res.status(200).json({ message: "Autor atualizado!" });
+      } else {
+        next(new NaoEncontrado("Autor não encontrado."));
+      }
     } catch(error) {
       next(error);
     }
@@ -50,8 +55,13 @@ class AutorController {
   static async excluirAutor(req, res, next) {
     try {
       const id = req.params.id;
-      await autor.findByIdAndDelete(id);
-      res.status(200).json({ message: "Autor excluido com sucesso!" });
+      const autorResultado = await autor.findByIdAndDelete(id);
+
+      if (autorResultado !== null) {
+        res.status(200).json({ message: "Autor excluido com sucesso!" });
+      } else {
+        next(new NaoEncontrado("Autor não encontrado."));
+      }
     } catch(error) {
       next(error);
     }

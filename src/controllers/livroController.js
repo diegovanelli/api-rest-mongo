@@ -1,12 +1,15 @@
-import NaoEncotrado from "../errors/NaoEncontrado.js";
+import NaoEncontrado from "../errors/NaoEncontrado.js";
 import { autor, livro } from "../models/index.js";
 
 class LivroController {
 
   static listarLivros = async (req, res, next) => {
     try {
-      const listaLivros = await livro.find({});
-      res.status(200).json(listaLivros);
+      const buscaLivros = livro.find();
+
+      req.resultado = buscaLivros;
+
+      next();
     } catch (error) {
       next(error);
     }
@@ -20,7 +23,7 @@ class LivroController {
       if (livroEncontrado !== null) {
         res.status(200).json(livroEncontrado);
       } else {
-        next(new NaoEncotrado("Livro não encontrado"));
+        next(new NaoEncontrado("Livro não encontrado"));
       }
       res.status(200).json(livroEncontrado);
     } catch(error) {
@@ -43,8 +46,12 @@ class LivroController {
   static atualizarLivro = async (req, res, next) => {
     try {
       const id = req.params.id;
-      await livro.findByIdAndUpdate(id, req.body);
-      res.status(200).json({ message: "Livro atualizado!" });
+      const livroResultado = await livro.findByIdAndUpdate(id, req.body);
+      if (livroResultado !== null) {
+        res.status(200).json({ message: "Livro atualizado!" });
+      } else {
+        next(new NaoEncontrado("Id do livro não localizado."));
+      }
     } catch(error) {
       next(error);
     }
@@ -53,18 +60,23 @@ class LivroController {
   static excluirLivro = async (req, res, next) => {
     try {
       const id = req.params.id;
-      await livro.findByIdAndDelete(id);
-      res.status(200).json({ message: "Livro excluido com sucesso!" });
+      const livroResultado = await livro.findByIdAndDelete(id);
+      if (livroResultado !== null) {
+        res.status(200).json({ message: "Livro excluido com sucesso!" });
+      } else {
+        next(new NaoEncontrado("Id do livro não localizado."));
+      }
     } catch(error) {
       next(error);
     }
   };
 
   static listarLivrosPorFiltro = async (req, res, next) => {
-    const busca = await processaBusca(req.query);
     try {
+      const busca = await processaBusca(req.query);
+
       if (busca !== null) {
-        const livrosPorFiltro = await livro.find({ busca });
+        const livrosPorFiltro = await livro.find(busca).populate("autor");
         res.status(200).json(livrosPorFiltro);
       } else {
         res.status(200).send([]);
@@ -89,14 +101,18 @@ async function processaBusca(query) {
   if (maxPaginas) busca.paginas.$lte = maxPaginas;
 
   if (nomeAutor) {
-    const autor = await autor.findOne({ nome: nomeAutor});
-    const autorId = autor._id;
-
-    if (autor !== null) {
-      busca.autor = autorId;
-    } else {
-      busca = null;
+    try {
+      
+      const autorEncontrado = await autor.findOne({ nome: nomeAutor});
+      if (autorEncontrado !== null) {
+        busca.autor = autorEncontrado._id;
+      } else {
+        busca = null;
+      }
+    } catch (error) {
+      console.log(error);
     }
+
   }
 
   return busca;

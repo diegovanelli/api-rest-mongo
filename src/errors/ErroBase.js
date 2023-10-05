@@ -7,7 +7,7 @@ class ErrorBase extends Error {
 
   enviarResposta(res) {
     res.status(this.status).send({
-      mensagem: this.messagem,
+      mensagem: this.message,
       status: this.status
     });
   }
